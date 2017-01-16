@@ -1,4 +1,4 @@
-function [phasor, frequency, rocof]=pmu(f0, fs, Data, h0)
+function [phasor, frequency, rocof, phasors]=pmu(f0, fs, Data, h0)
 % Phasor measurement unit
 %
 % Input:
@@ -14,6 +14,7 @@ function [phasor, frequency, rocof]=pmu(f0, fs, Data, h0)
 %    phasor:    Instant positive-order phasor
 %    frequency: Instant frequency
 %    rocof:     Rate of change of frequency
+%    phasors:   Instant phasor
 
 %% Parameters
 L  = size(Data,1); % Length of samples
@@ -45,5 +46,6 @@ phi = unwrap(angle(Xp));
 phasor    = Xp;
 frequency = fftfilt(h1, phi);
 rocof     = fftfilt(h2, phi);
+phasors   = Xabc;
 
 end
