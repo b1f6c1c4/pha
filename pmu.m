@@ -1,4 +1,4 @@
-function [phasor, frequency, rocof, phasors]=pmu(f0, fs, Data, h0)
+function [estimated]=pmu(f0, fs, Data, h0, h1)
 % Phasor measurement unit
 %
 % Input:
@@ -8,13 +8,17 @@ function [phasor, frequency, rocof, phasors]=pmu(f0, fs, Data, h0)
 %        (:,1) is phase A instant signal
 %        (:,2) is phase B instant signal
 %        (:,3) is phase C instant signal
-%    h0:       FIR low-pass filter of order fs/f0 - 1
+%    h0:       FIR low-pass filter
+%    h1:       FIR first-order differential
 %
 % Output:
-%    phasor:    Instant positive-order phasor
-%    frequency: Instant frequency
-%    rocof:     Rate of change of frequency
-%    phasors:   Instant phasor
+%    estimated:
+%        phasor:    Instant positive-order phasor
+%        frequency: Instant frequency
+%        rocof:     Rate of change of frequency
+%        phasorA:   Instant phasor of A
+%        phasorB:   Instant phasor of B
+%        phasorC:   Instant phasor of C
 
 %% Parameters
 L  = size(Data,1); % Length of samples
@@ -22,7 +26,6 @@ T  = L / fs;       % Total sampling time, second
 Ts = 1 / fs;       % Sampling period, second
 
 %% Filters
-h1 = [1,0,-1].*(fs/(4*pi));   % First-order differential
 h2 = [1,-2,1].*(fs^2/(2*pi)); % Second-order differential
 
 %% Oscillator
@@ -43,9 +46,12 @@ Xp  = Xabc * alp.';
 phi = unwrap(angle(Xp));
 
 %% Output
-phasor    = Xp;
-frequency = fftfilt(h1, phi);
-rocof     = fftfilt(h2, phi);
-phasors   = Xabc;
+estimated = struct(                ...
+    'phasor', Xp,                  ...
+    'frequency', fftfilt(h1, phi), ...
+    'rocof', fftfilt(h2, phi),     ...
+    'phasorA', Xabc(:,1),          ...
+    'phasorB', Xabc(:,2),          ...
+    'phasorC', Xabc(:,3));
 
 end

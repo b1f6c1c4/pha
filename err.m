@@ -1,18 +1,24 @@
-function [TVE, FE, RFE]=err(fs, Nh0, Nh1, phasor0, frequency0, rocof0, phasors0, phasor, frequency, rocof, phasors, plotting)
+function [TVE, FE, RFE]=err(fs, Nh0, Nh1, standard, estimated, plotting)
 % Error calculation
 %
 % Input:
 %    fs:         Sampling frequency, Hz
 %    Nh0:        Length of the FIR filter h0
 %    Nh1:        Length of the FIR filter h1
-%    phasor0:    Instant positive-order phasor (ref.)
-%    frequency0: Instant frequency             (ref.)
-%    rocof0:     Rate of change of frequency   (ref.)
-%    phasors0:   Instant phasor                (ref.)
-%    phasor:     Instant positive-order phasor (est.)
-%    frequency:  Instant frequency             (est.)
-%    rocof:      Rate of change of frequency   (est.)
-%    phasors0:   Instant phasor                (est.)
+%    standard:
+%        phasor:    Instant positive-order phasor
+%        frequency: Instant frequency
+%        rocof:     Rate of change of frequency
+%        phasorA:   Instant phasor of A
+%        phasorB:   Instant phasor of B
+%        phasorC:   Instant phasor of C
+%    estimated:
+%        phasor:    Instant positive-order phasor
+%        frequency: Instant frequency
+%        rocof:     Rate of change of frequency
+%        phasorA:   Instant phasor of A
+%        phasorB:   Instant phasor of B
+%        phasorC:   Instant phasor of C
 %    plotting:
 %        'no':   don't plot
 %        other:  save to that file
@@ -25,14 +31,14 @@ function [TVE, FE, RFE]=err(fs, Nh0, Nh1, phasor0, frequency0, rocof0, phasors0,
 % Note: Output is the max value
 
 %% Alignment
-N  = length(phasor0);
-t0 = Nh0/2 + Nh1 + 1 : N - Nh0/2 + 1;
-t1 = Nh0   + Nh1     : N;
+L  = length(standard.phasor);
+t0 = Nh0/2 + Nh1 + 1 : L - Nh0/2 + 1;
+t1 = Nh0   + Nh1     : L;
 
 %% Instant error
-tTVE = abs(phasor(t1)    - phasor0(t0)   ) ./ abs(phasor0(t0));
-tFE  = abs(frequency(t1) - frequency0(t0));
-tRFE = abs(rocof(t1)     - rocof0(t0)    );
+tTVE = abs(estimated.phasor(t1)    - standard.phasor(t0)   ) ./ abs(standard.phasor(t0));
+tFE  = abs(estimated.frequency(t1) - standard.frequency(t0));
+tRFE = abs(estimated.rocof(t1)     - standard.rocof(t0)    );
 
 %% Max error
 TVE = max(tTVE);
@@ -44,7 +50,6 @@ if (strcmp(plotting, 'no'))
     return;
 end
 
-L  = length(phasor0);
 T  = L / fs;
 Ts = 1 / fs;
 t  = (0 : Ts : T-Ts).';
@@ -55,47 +60,47 @@ fh = figure;
 %% Phasor
 clf;
 hold on;
-plot(t, real(phasor0(t0)), '');
-plot(t, real(phasor(t1)), '--');
-plot(t, imag(phasor0(t0)), '');
-plot(t, imag(phasor(t1)), '--');
+plot(t, real(standard.phasor(t0)), '');
+plot(t, real(estimated.phasor(t1)), '--');
+plot(t, imag(standard.phasor(t0)), '');
+plot(t, imag(estimated.phasor(t1)), '--');
 xlabel('t/s');
 ylabel('Positive-order Phasor');
 legend('Re', 'Re(est.)', 'Im', 'Im(est.)');
-saveas(['./Generated/' plotting '-phasor.eps'], 'epsc');
+saveas(fh, ['./Generated/' plotting '-phasor.eps'], 'epsc');
 
 %% Phasors
 clf;
 hold on;
-plot(t, real(phasors0(t0,1)), '');
-plot(t, real(phasors(t1,1)), '--');
-plot(t, imag(phasors0(t0,1)), '');
-plot(t, imag(phasors(t1,1)), '--');
-plot(t, real(phasors0(t0,2)), '');
-plot(t, real(phasors(t1,2)), '--');
-plot(t, imag(phasors0(t0,2)), '');
-plot(t, imag(phasors(t1,2)), '--');
-plot(t, real(phasors0(t0,3)), '');
-plot(t, real(phasors(t1,3)), '--');
-plot(t, imag(phasors0(t0,3)), '');
-plot(t, imag(phasors(t1,3)), '--');
+plot(t, real(standard.phasorA(t0)), '');
+plot(t, real(estimated.phasorA(t1)), '--');
+plot(t, imag(standard.phasorA(t0)), '');
+plot(t, imag(estimated.phasorA(t1)), '--');
+plot(t, real(standard.phasorB(t0)), '');
+plot(t, real(estimated.phasorB(t1)), '--');
+plot(t, imag(standard.phasorB(t0)), '');
+plot(t, imag(estimated.phasorB(t1)), '--');
+plot(t, real(standard.phasorC(t0)), '');
+plot(t, real(estimated.phasorC(t1)), '--');
+plot(t, imag(standard.phasorC(t0)), '');
+plot(t, imag(estimated.phasorC(t1)), '--');
 xlabel('t/s');
 ylabel('Phasors');
 legend( ...
     'A.Re', 'A.Re(est.)', 'A.Im', 'A.Im(est.)', ...
     'B.Re', 'B.Re(est.)', 'B.Im', 'B.Im(est.)', ...
     'C.Re', 'C.Re(est.)', 'C.Im', 'C.Im(est.)');
-saveas(['./Generated/' plotting '-phasors.eps'], 'epsc');
+saveas(fh, ['./Generated/' plotting '-phasors.eps'], 'epsc');
 
 %% Frequency
 clf;
 hold on;
-plot(t, frequency0(t0), '');
-plot(t, frequency(t1), '--');
+plot(t, standard.frequency(t0), '');
+plot(t, estimated.frequency(t1), '--');
 xlabel('t/s');
 ylabel('Frequency Offset/Hz');
 legend('\Delta f', '\Delta f(est.)');
-saveas(['./Generated/' plotting 'frequency.eps'], 'epsc');
+saveas(fh, ['./Generated/' plotting '-frequency.eps'], 'epsc');
 
 close(fh);
 
