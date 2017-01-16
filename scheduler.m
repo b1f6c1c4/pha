@@ -19,7 +19,25 @@ h0Trig = h0Trig ./ sum(h0Trig);
 h1Naive = [1,0,-1].*(fs/(4*pi));
 
 %% Actual data
-acData = load('WavData.mat');
+acData0   = load('WavData');
+pmuData   = load('PMUData');
+acVolt    = acData0.Data(:, 1:3);
+acCurr    = acData0.Data(:, 4:6);
+pmuDataR  = interp1(pmuData.t.', pmuData.Data, acData0.t.');
+acVoltStd = struct(             ...
+    'phasor', pmuDataR(:,4),    ...
+    'frequency', pmuDataR(:,9)-50, ...
+    'rocof', nan(L,1),          ...
+    'phasorA', pmuDataR(:,1),   ...
+    'phasorB', pmuDataR(:,2),   ...
+    'phasorC', pmuDataR(:,3));
+acCurrStd = struct(             ...
+    'phasor', pmuDataR(:,8),    ...
+    'frequency', pmuDataR(:,9)-50, ...
+    'rocof', nan(L,1),          ...
+    'phasorA', pmuDataR(:,5),   ...
+    'phasorB', pmuDataR(:,6),   ...
+    'phasorC', pmuDataR(:,7));
 
 %% Prepare
 format short;
@@ -91,6 +109,16 @@ function []=test(h0, h1, plotting)
     [estimated]      = pmu(f0, fs, Data, h0, h1);
     [TVE, FE, RFE]   = err(fs, length(h0), length(h1), standard, estimated, [plotting '-amfm']);
     disp(['AM-FM: TVE=' num2str(TVE*100) '% FE=' num2str(FE) 'Hz RFE=' num2str(RFE) 'Hz/s']);
+
+    %% Actual volt
+    [estimated]      = pmu(f0, fs, acVolt, h0, h1);
+    [TVE, FE, ~]     = err(fs, length(h0), length(h1), acVoltStd, estimated, [plotting '-volt']);
+    disp(['Volt: TVE=' num2str(TVE*100) '% FE=' num2str(FE) 'Hz']);
+
+    %% Actual curr
+    [estimated]      = pmu(f0, fs, acCurr, h0, h1);
+    [TVE, FE, ~]     = err(fs, length(h0), length(h1), acCurrStd, estimated, [plotting '-curr']);
+    disp(['Curr: TVE=' num2str(TVE*100) '% FE=' num2str(FE) 'Hz']);
 
 end
 
