@@ -38,7 +38,7 @@ am = sqrt(2) .* A0 .*        ... % Base amplitude
      (1 + kx .* cos(wm.*t));     % Amplitude modulation
 
 %% Data generation
-Data = am .* cos(ph + exp((2j*pi/3) .* [0 1 2]) ./ 3);
+Data = am .* cos(ph - (2*pi/3) .* [0 1 2]);
 
 %% Standard output
 q = t + 0.5/fs;
