@@ -23,13 +23,13 @@ t=[0:L-1]'/fs;  %采样信号时钟序列
 Data=zeros(length(t),3);  %abc三相采样信号
 for k=1:3
     Data(:,k)=sqrt(2)*A0*(1+kx*cos(2*pi*fm*t)).*...
-        cos(2*pi*f0*t+ka*cos(2*pi*fm*t-pi)+phi0-(k-1)*2*pi/3); %试验信号波形
+        cos(2*pi*(f0+df)*t+ka*cos(2*pi*fm*t-pi)+phi0-(k-1)*2*pi/3); %试验信号波形
 end
 %% a相和正序分量理论值
 Amp_true=(1+kx*cos(2*pi*fm*(t+0.5/fs)));  %瞬时幅度
-Phi_true=ka*cos(2*pi*fm*(t+0.5/fs)-pi)+phi0;  %瞬时相位
+Phi_true=2*pi*df*t+ka*cos(2*pi*fm*(t+0.5/fs)-pi)+phi0;  %瞬时相位
 X_true=Amp_true.*exp(j*Phi_true);  %动态相量
-Freq_true=-ka*fm*sin(2*pi*fm*(t+0.5/fs)-pi);  %瞬时频率偏移值
+Freq_true=df-ka*fm*sin(2*pi*fm*(t+0.5/fs)-pi);  %瞬时频率偏移值
 ROCOF_true=-ka*2*pi*fm^2*cos(2*pi*fm*(t+0.5/fs)-pi);  %瞬时频率变化率
 
 %% 步骤3：PMU测量过程
