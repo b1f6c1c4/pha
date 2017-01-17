@@ -9,14 +9,34 @@ L  = T * fs;
 %% Filter design
 N0 = fs / f0;
 
-%% Low-pass
+% Low-pass
 h0Rect = ones(N0,1);
 h0Rect = h0Rect ./ sum(h0Rect);
 h0Trig = N0 - abs(2.*(-N0/2 : N0/2-1) + 1);
 h0Trig = h0Trig ./ sum(h0Trig);
 
-%% First-order differential
+% First-order differential
 h1Naive = [1,0,-1].*(fs/(4*pi));
+
+% Plot
+fh = figure;
+clf;
+hold on;
+fltplt(h0Rect, 'log');
+fltplt(h0Trig, 'log');
+axis([0 500 -70 5]);
+grid on;
+legend('h0-rect', 'h0-trig');
+saveas(fh, './Generated/h0.eps', 'epsc');
+
+clf;
+hold on;
+fltplt(h1Naive, 'linear');
+grid on;
+legend('h1-naive');
+saveas(fh, './Generated/h1.eps', 'epsc');
+
+close(fh);
 
 %% Actual data
 acData0   = load('WavData');
@@ -57,6 +77,20 @@ test(h0Trig, h1Naive, 'trig-naive');
 diary off;
 
 %% Subfunctions
+
+function []=fltplt(h, plotting)
+
+    [X,f] = freqz(h, 1, 16384, fs);
+    if (strcmp(plotting, 'log'))
+        plot(f, 20.*log10(abs(X)));
+        ylabel('|H(\omega)|/dB');
+    else
+        plot(f, abs(X));
+        ylabel('|H(\omega)|');
+    end
+    xlabel('f/Hz');
+
+end
 
 function []=test(h0, h1, plotting)
 
