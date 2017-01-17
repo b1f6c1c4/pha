@@ -1,0 +1,126 @@
+﻿% !Mode::"XeLaTeX:UTF-8"
+\documentclass[a4paper]{article}
+\usepackage{ctex}
+\usepackage{engord}
+\usepackage{pifont}
+\usepackage{siunitx}
+\usepackage{chngcntr}
+\usepackage{enumitem,mdwlist}
+\usepackage{fontspec,listings}
+\usepackage[perpage]{footmisc}
+\usepackage{multicol,pdflscape}
+\usepackage[margin=1in]{geometry}
+\usepackage[numbered,framed]{matlab-prettifier}
+\usepackage{amsmath,amssymb,amsthm,empheq,mathtools,amsthm,mathrsfs}
+\usepackage{graphicx,epstopdf,subcaption,float,wrapfig}
+\usepackage{array,booktabs,threeparttable,hhline,multirow}
+\usepackage{cleveref}
+\usepackage{tikz}
+\usetikzlibrary{decorations.markings}
+\sisetup{list-separator={, },list-final-separator={, },list-pair-separator={, },separate-uncertainty,range-phrase={\ensuremath{\sim}}}
+\newcommand\crefpairgroupconjunction{和}\newcommand\crefmiddlegroupconjunction{、}\newcommand\creflastgroupconjunction{和}
+\newcommand\crefrangeconjunction{至}\newcommand\crefrangepreconjunction{}\newcommand\crefrangepostconjunction{}
+\newcommand\crefpairconjunction{和}\newcommand\crefmiddleconjunction{、}\newcommand\creflastconjunction{和}
+\renewcommand\thefootnote{\ding{\numexpr171+\value{footnote}}}
+\crefname{listing}{程序}{程序}\Crefname{listing}{程序}{程序}
+\crefname{equation}{式}{式}\Crefname{equation}{式}{式}
+\crefname{section}{节}{节}\Crefname{section}{节}{节}
+\crefname{figure}{图}{图}\Crefname{figure}{图}{图}
+\crefname{table}{表}{表}\Crefname{table}{表}{表}
+\renewcommand{\lstlistingname}{程序}
+\AtBeginDocument{\counterwithin{lstlisting}{section}}
+\counterwithin{figure}{section}
+\counterwithin{table}{section}
+\setmonofont{Consolas}
+\catcode`\。= 13
+\def。{．}
+\title{《数字信号处理》大作业}
+\author{涂金正, 电41, 2014010914}
+\date{2016年12月5日}
+
+\newcommand{\jj}{\mathrm{j}}
+\newcommand{\Sa}{\mathrm{Sa}}
+\newcommand{\dd}{\mathrm{d}}
+\newcommand{\question}[1]{\renewcommand{\thesection}{习题~#1}\section}
+\newcommand{\questionx}[1]{\question{#1}{（题目略）}}
+\newenvironment{solution}[1][\unskip]{\renewcommand{\qedsymbol}{}\proof[#1 解]}{\endproof}
+\newcommand{\gen}{./Generated}
+\newcommand{\matlab}[1]{\lstinputlisting[style=Matlab-editor,basicstyle=\ttfamily\small,numbers=none,caption={\texttt{#1}}]{#1}}
+\newcommand{\largefigure}[1]{\begin{center}\includegraphics[width=\linewidth]{\gen/#1}\end{center}}
+\newcommand{\smallfigure}[1]{\begin{center}\includegraphics[width=0.7\linewidth]{\gen/#1}\end{center}}
+\newcommand{\result}[1]{\lstinputlisting[basicstyle=\ttfamily\tiny,breaklines]{\gen/#1}}
+\DeclareMathOperator{\acosh}{arccosh}
+\DeclareMathOperator{\asinh}{arcsinh}
+\newcommand{\thefigures}[2]{%
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{0.3\linewidth}
+    \centering
+    \includegraphics[width=\linewidth,trim=0 0 0 0,clip,keepaspectratio]{\gen/#2-phasor.eps}
+    \caption{正序相量}
+    \label{fig:#2-phasor}
+  \end{subfigure}
+  \begin{subfigure}[b]{0.3\linewidth}
+    \centering
+    \includegraphics[width=\linewidth,trim=0 0 0 0,clip,keepaspectratio]{\gen/#2-frequency.eps}
+    \caption{频率}
+    \label{fig:#2-frequency}
+  \end{subfigure}
+  \begin{subfigure}[b]{0.3\linewidth}
+    \centering
+    \includegraphics[width=\linewidth,trim=0 0 0 0,clip,keepaspectratio]{\gen/#2-phasors}
+    \caption{三相相量}
+    \label{fig:#2-phasors}
+  \end{subfigure}
+  \caption{#1}
+\end{figure}}
+
+\makeatletter
+\def\@maketitle{%
+  \newpage
+  \null
+  \begin{center}%
+  \let \footnote \thanks
+    {\LARGE \@title \@date \par}%
+    {\large
+      \begin{tabular}[t]{c}%
+        \@author
+      \end{tabular}\par}%
+  \end{center}%
+  \par
+  \vskip 1.5em
+  }
+\fi
+\makeatother
+
+\begin{document}
+\maketitle
+\section{任务一}
+\subsection{PMU测量的Matlab实现}
+编写了Matlab函数\lstinline"pmu"，
+传入不同的\lstinline"h0"和\lstinline"h1"参数，就可以实现基于不同的滤波器的PMU测量。
+
+\subsection{矩形窗对标准波形的性能测试}
+\thefigures{矩形窗，$\Delta f=\SI{0}{\hertz}$}{rect-naive-s0}
+\thefigures{矩形窗，$\Delta f=\SI{+1}{\hertz}$}{rect-naive-sp1}
+\thefigures{矩形窗，$\Delta f=\SI{-1}{\hertz}$}{rect-naive-sm1}
+\thefigures{矩形窗，$\Delta f=\SI{+2}{\hertz}$}{rect-naive-sp2}
+\thefigures{矩形窗，$\Delta f=\SI{-2}{\hertz}$}{rect-naive-sm2}
+\thefigures{矩形窗，AM-FM}{rect-naive-amfm}
+
+\subsection{三角窗对标准波形的性能测试}
+\thefigures{三角窗，$\Delta f=\SI{0}{\hertz}$}{trig-naive-s0}
+\thefigures{三角窗，$\Delta f=\SI{+1}{\hertz}$}{trig-naive-sp1}
+\thefigures{三角窗，$\Delta f=\SI{-1}{\hertz}$}{trig-naive-sm1}
+\thefigures{三角窗，$\Delta f=\SI{+2}{\hertz}$}{trig-naive-sp2}
+\thefigures{三角窗，$\Delta f=\SI{-2}{\hertz}$}{trig-naive-sm2}
+\thefigures{三角窗，AM-FM}{trig-naive-amfm}
+
+\section*{附录}
+Matlab程序：
+\matlab{gen.m}
+\matlab{pmu.m}
+\matlab{err.m}
+\matlab{scheduler.m}
+
+\end{document}
