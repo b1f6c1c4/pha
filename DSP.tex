@@ -48,7 +48,7 @@
 \newcommand{\matlab}[1]{\lstinputlisting[style=Matlab-editor,basicstyle=\ttfamily\small,numbers=none,caption={\texttt{#1}}]{#1}}
 \newcommand{\largefigure}[1]{\begin{center}\includegraphics[width=\linewidth]{\gen/#1}\end{center}}
 \newcommand{\smallfigure}[1]{\begin{center}\includegraphics[width=0.7\linewidth]{\gen/#1}\end{center}}
-\newcommand{\result}[1]{\lstinputlisting[basicstyle=\ttfamily\tiny,breaklines]{\gen/#1}}
+\newcommand{\result}[1]{\lstinputlisting[basicstyle=\ttfamily\small,breaklines]{\gen/#1}}
 \DeclareMathOperator{\acosh}{arccosh}
 \DeclareMathOperator{\asinh}{arcsinh}
 \newcommand{\thefigures}[2]{%
@@ -123,11 +123,6 @@
 \section{任务二：两种滤波器方案的相量测量性能指标}
 根据附录所示计算结果，三角窗在所有测试波形下各种误差都要小于矩形窗。
 这是由于三角窗的频响特性（见\cref{fig:freqz}）下降更为剧烈，在低频段波动更小导致的。
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.7\linewidth,trim=0 0 0 0,clip,keepaspectratio]{\gen/h0.eps}
-  \caption{\label{fig:freqz} 三角窗和矩形窗的频响特性}
-\end{figure}
 
 综上所述，三角窗的谐波抑制、抗噪声性能比矩形窗好，
 矩形窗的动态响应性能比三角窗好。
@@ -146,6 +141,50 @@
 另外，实际PMU设备同时考虑到了电压和电流的频率，比起前述na\"{i}ve的PMU算法，可以互相校正，更利于稳定输出。
 
 \section{任务四：M类应用中的滤波器设计与分析}
+\subsection{$h_0$的设计}
+由于需要设计低通滤波器，故必须用I型或者II型FIR。
+经过仔细查阅IEEE标准，图中的\lstinline"Fs"表示的是系统频率$f_0$，而不是采样频率$f_s$。
+因此要设计一个
+通带截止频率\SI{5}{\hertz}，通带纹波\SI{0.2}{\deci\bel}，
+阻带截止频率\SI{50}{\hertz}，阻带衰减\SI{20}{\deci\bel}
+的低通滤波器。
+
+采用最优化方法设计，调用\lstinline"firls"函数（详见附录\lstinline"scheduler.m"文件的"\lstinline"Filter design"节）。
+频率响应见\cref{fig:freqz}。
+
+标准信号测量结果如下，具体数据见附录。
+\thefigures{M类低通，$\Delta f=\SI{0}{\hertz}$}{fir-naive-s0}
+\thefigures{M类低通，$\Delta f=\SI{+1}{\hertz}$}{fir-naive-sp1}
+\thefigures{M类低通，$\Delta f=\SI{-1}{\hertz}$}{fir-naive-sm1}
+\thefigures{M类低通，$\Delta f=\SI{+2}{\hertz}$}{fir-naive-sp2}
+\thefigures{M类低通，$\Delta f=\SI{-2}{\hertz}$}{fir-naive-sm2}
+\thefigures{M类低通，AM-FM}{fir-naive-amfm}
+\thefigures{M类低通，实际数据电压}{fir-naive-volt}
+\thefigures{M类低通，实际数据电流}{fir-naive-curr}
+
+可见，M类低通相比于P类三角窗，TVE误差进一步减小，FE和ROCOF误差有少许增大。
+
+\subsection{$h_1$的设计}
+由于需要设计低通微分器，故必须用III型或者IV型FIR。
+
+采用最优化方法设计，调用\lstinline"firls"函数（详见附录\lstinline"scheduler.m"文件的"\lstinline"Filter design"节）。
+频率响应见\cref{fig:freqzD}。
+
+标准信号测量结果如下，具体数据见附录。
+\thefigures{M类低通+M类微分，$\Delta f=\SI{0}{\hertz}$}{fir-fir-s0}
+\thefigures{M类低通+M类微分，$\Delta f=\SI{+1}{\hertz}$}{fir-fir-sp1}
+\thefigures{M类低通+M类微分，$\Delta f=\SI{-1}{\hertz}$}{fir-fir-sm1}
+\thefigures{M类低通+M类微分，$\Delta f=\SI{+2}{\hertz}$}{fir-fir-sp2}
+\thefigures{M类低通+M类微分，$\Delta f=\SI{-2}{\hertz}$}{fir-fir-sm2}
+\thefigures{M类低通+M类微分，AM-FM}{fir-fir-amfm}
+\thefigures{M类低通+M类微分，实际数据电压}{fir-fir-volt}
+\thefigures{M类低通+M类微分，实际数据电流}{fir-fir-curr}
+
+可见，M类微分相比于P类微分，对于标准测试信号的FE和ROCOF都增大了许多，
+但是对于实际信号——也就是含有电压突变的信号，
+误差减小了许多。
+仔细观察波形（对比\cref{fig:fir-fir-volt-frequency,fig:fir-naive-volt-frequency}），
+不难发现，M类微分有效缓和了（测量）频率突变，使得测出的频率与真实频率更为接近。
 
 \section{附录}
 Matlab程序：
@@ -155,5 +194,17 @@ Matlab程序：
 \matlab{scheduler.m}
 运行结果：
 \result{data.txt}
+
+\begin{figure}[p]
+  \centering
+  \includegraphics[width=0.7\linewidth,trim=0 0 0 0,clip,keepaspectratio]{\gen/h0.eps}
+  \caption{\label{fig:freqz} P类三角窗、P类矩形窗、M类低通滤波器的频响特性}
+\end{figure}
+
+\begin{figure}[p]
+  \centering
+  \includegraphics[width=0.7\linewidth,trim=0 0 0 0,clip,keepaspectratio]{\gen/h1.eps}
+  \caption{\label{fig:freqzD} P类线性微分、M类低通微分器的频响特性}
+\end{figure}
 
 \end{document}

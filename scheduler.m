@@ -14,26 +14,36 @@ h0Rect = ones(N0,1);
 h0Rect = h0Rect ./ sum(h0Rect);
 h0Trig = N0 - abs(2.*(-N0/2 : N0/2-1) + 1);
 h0Trig = h0Trig ./ sum(h0Trig);
+h0Fir  = firls(N0*5-1, [0 5 f0/2 fs/2]./(fs/2), [1 1 0.05 0], [10 1]);
+h0Fir  = h0Fir ./ sum(h0Fir);
 
 % First-order differential
 h1Naive = [1,0,-1].*(fs/(4*pi));
+h1Fir   = firls(N0-1, [0 10 50 fs/2]./(fs/2), [0 10 0 0], [1 10], 'differentiator');
 
 % Plot
 fh = figure;
+
 clf;
 hold on;
 fltplt(h0Rect, 'log');
 fltplt(h0Trig, 'log');
-axis([0 500 -70 5]);
+fltplt(h0Fir,  'log');
+axis([0 100 -30 1]);
 grid on;
-legend('h0-rect', 'h0-trig');
+legend('h0-rect', 'h0-trig', 'h1-fir');
+plot([0 5 5], [-0.1 -0.1 -100], 'k');
+plot([0 f0/2 f0/2 fs/2], [+0.1 +0.1 -20 -20], 'k');
 saveas(fh, './Generated/h0.eps', 'epsc');
 
 clf;
 hold on;
 fltplt(h1Naive, 'linear');
+fltplt(h1Fir,   'linear');
+axis([0 100 0 40]);
 grid on;
-legend('h1-naive');
+legend('h1-naive', 'h1-fir');
+plot([0 10 0 10 10], [10 10 0 10 0], 'k');
 saveas(fh, './Generated/h1.eps', 'epsc');
 
 close(fh);
@@ -44,19 +54,19 @@ pmuData   = load('PMUData');
 acVolt    = acData0.Data(:, 1:3);
 acCurr    = acData0.Data(:, 4:6);
 pmuDataR  = interp1(pmuData.t.', pmuData.Data, acData0.t.');
-acVoltStd = struct(                ...
-    'phasor', pmuDataR(:,4),       ...
-    'frequency', pmuDataR(:,9)-50, ...
-    'rocof', nan(L,1),             ...
-    'phasorA', pmuDataR(:,1),      ...
-    'phasorB', pmuDataR(:,2),      ...
+acVoltStd = struct(                      ...
+    'phasor', pmuDataR(:,4),             ...
+    'frequency', real(pmuDataR(:,9))-50, ...
+    'rocof', nan(L,1),                   ...
+    'phasorA', pmuDataR(:,1),            ...
+    'phasorB', pmuDataR(:,2),            ...
     'phasorC', pmuDataR(:,3));
-acCurrStd = struct(                ...
-    'phasor', pmuDataR(:,8),       ...
-    'frequency', pmuDataR(:,9)-50, ...
-    'rocof', nan(L,1),             ...
-    'phasorA', pmuDataR(:,5),      ...
-    'phasorB', pmuDataR(:,6),      ...
+acCurrStd = struct(                      ...
+    'phasor', pmuDataR(:,8),             ...
+    'frequency', real(pmuDataR(:,9))-50, ...
+    'rocof', nan(L,1),                   ...
+    'phasorA', pmuDataR(:,5),            ...
+    'phasorB', pmuDataR(:,6),            ...
     'phasorC', pmuDataR(:,7));
 
 %% Prepare
@@ -74,6 +84,17 @@ disp('=============');
 disp('h0=Trig, h1=Naive:');
 test(h0Trig, h1Naive, 'trig-naive');
 
+%% h0 = Fir, h1 = Naive
+disp('=============');
+disp('h0=Fir, h1=Naive:');
+test(h0Fir, h1Naive, 'fir-naive');
+
+%% h0 = Fir, h1 = Fir
+disp('=============');
+disp('h0=Fir, h1=Fir:');
+test(h0Fir, h1Fir, 'fir-fir');
+
+%% Final
 diary off;
 
 %% Subfunctions
