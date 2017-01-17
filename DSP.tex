@@ -95,12 +95,13 @@
 
 \begin{document}
 \maketitle
-\section{任务一}
+\section{任务一：PMU测量的实现与性能测试}
 \subsection{PMU测量的Matlab实现}
 编写了Matlab函数\lstinline"pmu"，
 传入不同的\lstinline"h0"和\lstinline"h1"参数，就可以实现基于不同的滤波器的PMU测量。
+详见附录。
 
-\subsection{矩形窗对标准波形的性能测试}
+\subsection{矩形窗对标准波形的性能测试曲线}
 \thefigures{矩形窗，$\Delta f=\SI{0}{\hertz}$}{rect-naive-s0}
 \thefigures{矩形窗，$\Delta f=\SI{+1}{\hertz}$}{rect-naive-sp1}
 \thefigures{矩形窗，$\Delta f=\SI{-1}{\hertz}$}{rect-naive-sm1}
@@ -108,7 +109,7 @@
 \thefigures{矩形窗，$\Delta f=\SI{-2}{\hertz}$}{rect-naive-sm2}
 \thefigures{矩形窗，AM-FM}{rect-naive-amfm}
 
-\subsection{三角窗对标准波形的性能测试}
+\subsection{三角窗对标准波形的性能测试曲线}
 \thefigures{三角窗，$\Delta f=\SI{0}{\hertz}$}{trig-naive-s0}
 \thefigures{三角窗，$\Delta f=\SI{+1}{\hertz}$}{trig-naive-sp1}
 \thefigures{三角窗，$\Delta f=\SI{-1}{\hertz}$}{trig-naive-sm1}
@@ -116,11 +117,43 @@
 \thefigures{三角窗，$\Delta f=\SI{-2}{\hertz}$}{trig-naive-sm2}
 \thefigures{三角窗，AM-FM}{trig-naive-amfm}
 
-\section*{附录}
+\subsection{TVE和FE最大值}
+见附录。
+
+\section{任务二：两种滤波器方案的相量测量性能指标}
+根据附录所示计算结果，三角窗在所有测试波形下各种误差都要小于矩形窗。
+这是由于三角窗的频响特性（见\cref{fig:freqz}）下降更为剧烈，在低频段波动更小导致的。
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.7\linewidth,trim=0 0 0 0,clip,keepaspectratio]{\gen/h0.eps}
+  \caption{\label{fig:freqz} 三角窗和矩形窗的频响特性}
+\end{figure}
+
+综上所述，三角窗的谐波抑制、抗噪声性能比矩形窗好，
+矩形窗的动态响应性能比三角窗好。
+
+\section{任务三：实际录波数据检验}
+\subsection{矩形窗对实际录波数据的性能测试曲线}
+\thefigures{矩形窗，实际数据电压}{rect-naive-volt}
+\thefigures{矩形窗，实际数据电流}{rect-naive-curr}
+\subsection{三角窗对实际录波数据的性能测试曲线}
+\thefigures{三角窗，实际数据电压}{trig-naive-volt}
+\thefigures{三角窗，实际数据电流}{trig-naive-curr}
+
+结合附录计算结果，可见这两种方法相比于PMU设备，还是非常na\"{i}ve，有着非常大的误差，
+尤其是对于频率的测量；
+这是由于\lstinline"h1"滤波器的阶数太低，把高频噪声分量无限制放大造成的。
+另外，实际PMU设备同时考虑到了电压和电流的频率，比起前述na\"{i}ve的PMU算法，可以互相校正，更利于稳定输出。
+
+\section{任务四：M类应用中的滤波器设计与分析}
+
+\section{附录}
 Matlab程序：
 \matlab{gen.m}
 \matlab{pmu.m}
 \matlab{err.m}
 \matlab{scheduler.m}
+运行结果：
+\result{data.txt}
 
 \end{document}
